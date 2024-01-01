@@ -137,7 +137,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex justify-between p-2">
-              <span>Today"s total</span>
+              <span>Today's total</span>
               <span>₹{total}</span>
             </div>
           )}
