@@ -15,8 +15,8 @@
 if (!self.define) {
   let registry = {};
 
-  // Used for `eval` and `importScripts` where we can"t get script URL by other means.
-  // In both cases, it"s safe to use a global var because those functions are synchronous.
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
   let nextDefineUri;
 
   const singleRequire = (uri, parentUri) => {
@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(["./workbox-e43f5367"], (function (workbox) { "use strict";
+define(['./workbox-e43f5367'], (function (workbox) { 'use strict';
 
   importScripts();
   self.skipWaiting();
@@ -81,21 +81,21 @@ define(["./workbox-e43f5367"], (function (workbox) { "use strict";
         event,
         state
       }) => {
-        if (response && response.type === "opaqueredirect") {
+        if (response && response.type === 'opaqueredirect') {
           return new Response(response.body, {
             status: 200,
-            statusText: "OK",
+            statusText: 'OK',
             headers: response.headers
           });
         }
         return response;
       }
     }]
-  }), "GET");
+  }), 'GET');
   workbox.registerRoute(/.*/i, new workbox.NetworkOnly({
     "cacheName": "dev",
     plugins: []
-  }), "GET");
+  }), 'GET');
 
 }));
 //# sourceMappingURL=sw.js.map
