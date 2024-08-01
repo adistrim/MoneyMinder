@@ -11,7 +11,6 @@ interface ExpenseListProps {
   token: string;
 }
 
-// New ConfirmDialog component
 interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -77,8 +76,12 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
       });
       const data = await response.json();
       if (Array.isArray(data)) {
-        setExpenses(data);
-        setTotal(data.reduce((acc, item) => acc + item.amount, 0));
+        const today = new Date().toDateString();
+        const todayExpenses = data.filter(
+          (item) => new Date(item.date).toDateString() === today,
+        );
+        setExpenses(todayExpenses);
+        setTotal(todayExpenses.reduce((acc, item) => acc + item.amount, 0));
       } else {
         setError("Failed to fetch expenses");
       }
