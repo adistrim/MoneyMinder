@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface Expense {
   _id: string;
@@ -11,10 +11,58 @@ interface ExpenseListProps {
   token: string;
 }
 
+// New ConfirmDialog component
+interface ConfirmDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  itemName: string;
+}
+
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  itemName,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-slate-800 p-6 rounded-lg w-full max-w-sm">
+        <h2 className="text-white text-lg mb-4 text-center">
+          Are you sure you want to delete "{itemName}"?
+        </h2>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    item: Expense | null;
+  }>({
+    isOpen: false,
+    item: null,
+  });
 
   useEffect(() => {
     fetchExpenses();
@@ -22,9 +70,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('/api/items', {
-        headers: { 
-          'Authorization': `Bearer ${token}`
+      const response = await fetch("/api/items", {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
@@ -32,29 +80,40 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
         setExpenses(data);
         setTotal(data.reduce((acc, item) => acc + item.amount, 0));
       } else {
-        setError('Failed to fetch expenses');
+        setError("Failed to fetch expenses");
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      setError("An error occurred. Please try again.");
     }
   };
 
-  const handleDelete = async (item: Expense) => {
+  const handleDeleteClick = (item: Expense) => {
+    setConfirmDialog({ isOpen: true, item });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDialog.item) return;
+
     try {
-      const response = await fetch(`/api/items/${item._id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(`/api/items/${confirmDialog.item._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
       if (response.ok) {
         fetchExpenses();
       } else {
-        setError('Failed to delete item');
+        setError("Failed to delete item");
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      setError("An error occurred. Please try again.");
     }
+    setConfirmDialog({ isOpen: false, item: null });
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmDialog({ isOpen: false, item: null });
   };
 
   return (
@@ -73,7 +132,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
               </span>
             </div>
             <button
-              onClick={() => handleDelete(item)}
+              onClick={() => handleDeleteClick(item)}
               className="ml-4 p-4 border-l-2 border-slate-900 hover:bg-slate-900 text-white rounded-md"
             >
               Delete
@@ -92,6 +151,12 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ token }) => {
         </div>
       )}
       {error && <p className="text-red-500">{error}</p>}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        itemName={confirmDialog.item?.name || ""}
+      />
     </div>
   );
 };
