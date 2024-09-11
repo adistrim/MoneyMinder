@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <main className="antialiasing max-w-2xl sm:mx-auto">
-          <div className="flex-auto min-w-0 flex flex-col">{children}</div>
+          <div className="flex-auto min-w-0 flex flex-col">
+            {children}
+            <BottomNavigation />
+          </div>
         </main>
       </body>
     </html>

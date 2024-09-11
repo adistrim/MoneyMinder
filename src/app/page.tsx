@@ -60,7 +60,7 @@ export default function Home() {
   return (
     <>
       <Header token={token} onLogout={handleLogout} />
-      <main className="flex min-h-screen flex-col items-center justify-between sm:p-24 p-4">
+      <main className="flex min-h-screen flex-col items-center justify-between sm:p-24 p-4 pb-16">
         <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm ">
           <div>
             <ExpenseForm token={token} onAddItem={handleAddItem} />
