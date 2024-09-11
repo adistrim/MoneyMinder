@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 
@@ -15,6 +15,7 @@ interface Expense {
 interface MonthlyData {
   month: string;
   total: number;
+  expenses: Expense[];
 }
 
 const MonthlyExpenses: React.FC = () => {
@@ -22,6 +23,7 @@ const MonthlyExpenses: React.FC = () => {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -71,49 +73,81 @@ const MonthlyExpenses: React.FC = () => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
                         'July', 'August', 'September', 'October', 'November', 'December'];
     
-    const monthlyTotals = new Array(12).fill(0);
+    const monthlyData: MonthlyData[] = monthNames.map(month => ({
+      month,
+      total: 0,
+      expenses: []
+    }));
 
     expenses.forEach(expense => {
       const expenseDate = new Date(expense.date);
       if (expenseDate.getFullYear() === year) {
-        monthlyTotals[expenseDate.getMonth()] += expense.amount;
+        const monthIndex = expenseDate.getMonth();
+        monthlyData[monthIndex].total += expense.amount;
+        monthlyData[monthIndex].expenses.push(expense);
       }
     });
 
-    return monthNames.map((month, index) => ({
-      month,
-      total: monthlyTotals[index]
-    }));
+    return monthlyData;
+  };
+
+  const handleMonthClick = (month: string) => {
+    setSelectedMonth(month === selectedMonth ? null : month);
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   return (
-    <div className="bg-slate-800 p-6 rounded-lg max-w-screen-md">
-      <h1 className="text-2xl font-bold text-white mb-6">Monthly Expenses</h1>
-      
-      <div className="mb-6">
-        <label htmlFor="year-select" className="block text-white mb-2">Select Year:</label>
-        <select
-          id="year-select"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(Number(e.target.value))}
-          className="bg-slate-700 text-white border border-slate-600 rounded px-3 py-2 w-full"
-        >
-          {availableYears.map(year => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
-      </div>
+    <div className="bg-slate-800 min-h-screen w-full pb-20">
+      <div className="p-4">
+        <h1 className="text-xl font-bold text-white mb-4">Monthly Expenses</h1>
+        
+        <div className="mb-4">
+          <label htmlFor="year-select" className="block text-white mb-2">Select Year:</label>
+          <select
+            id="year-select"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="bg-slate-700 text-white border border-slate-600 rounded px-3 py-2 w-full"
+          >
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      
-      <ul className="space-y-2">
-        {monthlyData.map((item) => (
-          <li key={item.month} className="flex justify-between items-center text-white py-2 border-b border-slate-700">
-            <span className="text-lg">{item.month}</span>
-            <span className="text-lg font-semibold">₹{item.total.toFixed(2)}</span>
-          </li>
-        ))}
-      </ul>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        
+        <ul className="space-y-2 overflow-y-auto">
+          {monthlyData.map((item) => (
+            <li key={item.month} className="bg-slate-700 rounded-lg mb-2">
+              <div 
+                className="flex justify-between items-center text-white p-3 cursor-pointer"
+                onClick={() => handleMonthClick(item.month)}
+              >
+                <span className="text-lg">{item.month}</span>
+                <span className="text-lg font-semibold">₹{item.total.toFixed(2)}</span>
+              </div>
+              {selectedMonth === item.month && (
+                <ul className="mt-2 space-y-2 p-3 bg-slate-600 rounded-b-lg">
+                  {item.expenses.map((expense) => (
+                    <li key={expense._id} className="text-white">
+                      <div className="flex justify-between items-center">
+                        <span>{expense.name}</span>
+                        <span>₹{expense.amount.toFixed(2)}</span>
+                      </div>
+                      <div className="text-sm text-slate-300">{formatDate(expense.date)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
